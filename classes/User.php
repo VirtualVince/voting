@@ -8,34 +8,30 @@ class User {
         $this->pdo = $pdo;
     }
 
-    public function create($username, $email, $password) {
+    public function registerUser($username, $email, $password) {
+        if (empty($username) || strlen($password) < 9 || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return false;
+        }
+
         $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
         $sql = "INSERT INTO {$this->table} (username, email, password) VALUES (:username, :email, :password)";
         $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([
+        return $stmt->execute([
             ':username' => $username,
             ':email' => $email,
             ':password' => $hashedPassword
         ]);
     }
 
-    public function getUserById($userId) {
-        $sql = "SELECT * FROM {$this->table} WHERE id = :id";
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([':id' => $userId]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
-
-    public function getUserByUsername($username) {
+    public function authenticateUser($username, $password) {
         $sql = "SELECT * FROM {$this->table} WHERE username = :username";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([':username' => $username]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    public function delete($userId) {
-        $sql = "DELETE FROM {$this->table} WHERE id = :id";
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([':id' => $userId]);
+        if ($user && password_verify($password, $user['password'])) {
+            return true;
+        }
+        return false;
     }
 }

@@ -8,26 +8,20 @@ class Comment {
         $this->pdo = $pdo;
     }
 
-    public function create($userId, $topicId, $comment) {
+    public function addComment($userId, $topicId, $comment) {
         $sql = "INSERT INTO {$this->table} (user_id, topic_id, comment, commented_at) VALUES (:user_id, :topic_id, :comment, NOW())";
         $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([
+        return $stmt->execute([
             ':user_id' => $userId,
             ':topic_id' => $topicId,
             ':comment' => $comment
         ]);
     }
 
-    public function getCommentsByTopic($topicId) {
+    public function getComments($topicId) {
         $sql = "SELECT * FROM {$this->table} WHERE topic_id = :topic_id ORDER BY commented_at DESC";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([':topic_id' => $topicId]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    public function delete($commentId) {
-        $sql = "DELETE FROM {$this->table} WHERE id = :id";
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([':id' => $commentId]);
     }
 }

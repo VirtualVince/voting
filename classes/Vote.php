@@ -8,26 +8,31 @@ class Vote {
         $this->pdo = $pdo;
     }
 
-    public function create($userId, $topicId, $voteType) {
+    public function vote($userId, $topicId, $voteType) {
+        if ($this->hasVoted($topicId, $userId)) {
+            return false;
+        }
+
         $sql = "INSERT INTO {$this->table} (user_id, topic_id, vote_type, voted_at) VALUES (:user_id, :topic_id, :vote_type, NOW())";
         $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([
+        return $stmt->execute([
             ':user_id' => $userId,
             ':topic_id' => $topicId,
             ':vote_type' => $voteType
         ]);
     }
 
-    public function getVotesByTopic($topicId) {
-        $sql = "SELECT * FROM {$this->table} WHERE topic_id = :topic_id ORDER BY voted_at DESC";
+    public function hasVoted($topicId, $userId) {
+        $sql = "SELECT COUNT(*) FROM {$this->table} WHERE topic_id = :topic_id AND user_id = :user_id";
         $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([':topic_id' => $topicId]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $stmt->execute([':topic_id' => $topicId, ':user_id' => $userId]);
+        return $stmt->fetchColumn() > 0;
     }
 
-    public function delete($voteId) {
-        $sql = "DELETE FROM {$this->table} WHERE id = :id";
+    public function getUserVoteHistory($userId) {
+        $sql = "SELECT * FROM {$this->table} WHERE user_id = :user_id ORDER BY voted_at DESC";
         $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([':id' => $voteId]);
+        $stmt->execute([':user_id' => $userId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }
