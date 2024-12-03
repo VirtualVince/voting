@@ -8,32 +8,26 @@ class Topic {
         $this->pdo = $pdo;
     }
 
-    public function create($userId, $title, $description) {
+    public function createTopic($userId, $title, $description) {
         $sql = "INSERT INTO {$this->table} (user_id, title, description, created_at) VALUES (:user_id, :title, :description, NOW())";
         $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([
+        return $stmt->execute([
             ':user_id' => $userId,
             ':title' => $title,
             ':description' => $description
         ]);
     }
 
-    public function getTopicById($topicId) {
-        $sql = "SELECT * FROM {$this->table} WHERE id = :id";
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([':id' => $topicId]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
-
-    public function getAllTopics() {
+    public function getTopics() {
         $sql = "SELECT * FROM {$this->table} ORDER BY created_at DESC";
         $stmt = $this->pdo->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function delete($topicId) {
-        $sql = "DELETE FROM {$this->table} WHERE id = :id";
+    public function getCreatedTopics($userId) {
+        $sql = "SELECT * FROM {$this->table} WHERE user_id = :user_id ORDER BY created_at DESC";
         $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([':id' => $topicId]);
+        $stmt->execute([':user_id' => $userId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }
