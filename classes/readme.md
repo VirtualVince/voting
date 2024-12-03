@@ -38,3 +38,7 @@ sqlbackup.sql: Backup of the database schema.
 main.php: Main script to demonstrate the usage of the classes.
 professor.php: Page for the professor with embedded YouTube video and SQL backup file.
 tests/VotingAppTest.php: Unit tests for the application.
+
+Username: testuser
+Email: testuser@example.com
+Password: password123
