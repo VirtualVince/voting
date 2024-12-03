@@ -13,45 +13,71 @@ $topic = new Topic($pdo);
 $vote = new Vote($pdo);
 $comment = new Comment($pdo);
 
-// Register a new user
-if ($user->registerUser('testuser', 'testuser@example.com', 'password123')) {
-    echo "User registered successfully.\n";
-} else {
-    echo "User registration failed.\n";
-}
+// Handle form submissions
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $action = $_POST['action'];
 
-// Authenticate user
-if ($user->authenticateUser('testuser', 'password123')) {
-    echo "User authenticated successfully.\n";
-} else {
-    echo "User authentication failed.\n";
-}
+    switch ($action) {
+        case 'register':
+            $username = $_POST['username'];
+            $email = $_POST['email'];
+            $password = $_POST['password'];
+            if ($user->registerUser($username, $email, $password)) {
+                echo "User registered successfully.\n";
+            } else {
+                echo "User registration failed.\n";
+            }
+            break;
 
-// Create a new topic
-if ($topic->createTopic(1, 'Sample Topic', 'This is a sample topic description.')) {
-    echo "Topic created successfully.\n";
-} else {
-    echo "Topic creation failed.\n";
+        case 'login':
+            $username = $_POST['username'];
+            $password = $_POST['password'];
+            if ($user->authenticateUser($username, $password)) {
+                echo "User authenticated successfully.\n";
+            } else {
+                echo "User authentication failed.\n";
+            }
+            break;
+
+        case 'create_topic':
+            $userId = 1; // Replace with actual user ID after login implementation
+            $title = $_POST['title'];
+            $description = $_POST['description'];
+            if ($topic->createTopic($userId, $title, $description)) {
+                echo "Topic created successfully.\n";
+            } else {
+                echo "Topic creation failed.\n";
+            }
+            break;
+
+        case 'vote':
+            $userId = 1; // Replace with actual user ID after login implementation
+            $topicId = $_POST['topic_id'];
+            $voteType = $_POST['vote_type'];
+            if ($vote->vote($userId, $topicId, $voteType)) {
+                echo "Vote recorded successfully.\n";
+            } else {
+                echo "Vote recording failed.\n";
+            }
+            break;
+
+        case 'comment':
+            $userId = 1; // Replace with actual user ID after login implementation
+            $topicId = $_POST['topic_id'];
+            $commentText = $_POST['comment'];
+            if ($comment->addComment($userId, $topicId, $commentText)) {
+                echo "Comment added successfully.\n";
+            } else {
+                echo "Comment addition failed.\n";
+            }
+            break;
+    }
 }
 
 // Retrieve all topics
 $topics = $topic->getTopics();
 echo "Topics:\n";
 print_r($topics);
-
-// Vote on a topic
-if ($vote->vote(1, 1, 'up')) {
-    echo "Vote recorded successfully.\n";
-} else {
-    echo "Vote recording failed.\n";
-}
-
-// Add a comment to a topic
-if ($comment->addComment(1, 1, 'This is a sample comment.')) {
-    echo "Comment added successfully.\n";
-} else {
-    echo "Comment addition failed.\n";
-}
 
 // Retrieve comments for a topic
 $comments = $comment->getComments(1);
